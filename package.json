@@ -1,0 +1,16 @@
+{
+  "name": "jayshree-billing",
+  "version": "1.0.0",
+  "description": "Billing system for Jayshree Chicken Shop",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.0",
+    "express": "^4.18.2",
+    "mongoose": "^7.6.3"
+  }
+}

@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Jayshree Chicken Shop — Billing</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0f0d0a;
+    --surface: #1a1612;
+    --surface2: #231f19;
+    --surface3: #2d2820;
+    --border: #3a3228;
+    --saffron: #f5a623;
+    --saffron-light: #ffbe5c;
+    --saffron-dark: #c47d0a;
+    --red: #e84040;
+    --green: #4caf7d;
+    --blue: #5b9cf6;
+    --text: #f0e8db;
+    --text-muted: #9e8e78;
+    --text-dim: #5c5048;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; }
+
+  /* ── LAYOUT ── */
+  .app { display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 230px; min-width: 230px; background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    padding: 0 0 20px 0;
+  }
+  .logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo .shop-name {
+    font-family: 'Baloo 2', cursive;
+    font-size: 22px; font-weight: 800;
+    color: var(--saffron);
+    line-height: 1.1;
+  }
+  .logo .tagline { font-size: 11px; color: var(--text-muted); margin-top: 3px; letter-spacing: 0.05em; }
+  .logo .chicken-emoji { font-size: 30px; display: block; margin-bottom: 6px; }
+
+  .nav { padding: 16px 12px; flex: 1; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px; border-radius: var(--radius-sm);
+    cursor: pointer; font-size: 14px; font-weight: 600;
+    color: var(--text-muted); transition: all 0.2s;
+    margin-bottom: 4px;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--saffron); color: #1a1000; }
+  .nav-item .icon { font-size: 18px; width: 22px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 16px 20px 0;
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ── MAIN ── */
+  .main { flex: 1; overflow-y: auto; overflow-x: hidden; }
+  .page { display: none; padding: 28px 32px; min-height: 100%; animation: fadeIn 0.3s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── PAGE HEADER ── */
+  .page-header { margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; }
+  .page-title { font-family: 'Baloo 2', cursive; font-size: 26px; font-weight: 700; color: var(--saffron); }
+  .page-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px; border-radius: var(--radius-sm);
+    font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; border: none; transition: all 0.2s; white-space: nowrap;
+  }
+  .btn-primary { background: var(--saffron); color: #1a1000; }
+  .btn-primary:hover { background: var(--saffron-light); transform: translateY(-1px); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--surface3); }
+  .btn-danger { background: rgba(232,64,64,0.15); color: var(--red); border: 1px solid rgba(232,64,64,0.3); }
+  .btn-danger:hover { background: rgba(232,64,64,0.25); }
+  .btn-success { background: rgba(76,175,125,0.15); color: var(--green); border: 1px solid rgba(76,175,125,0.3); }
+  .btn-success:hover { background: rgba(76,175,125,0.25); }
+  .btn-whatsapp { background: #25d366; color: #fff; }
+  .btn-whatsapp:hover { background: #20c05c; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-icon { padding: 8px; min-width: unset; }
+
+  /* ── STAT CARDS ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 100%; height: 3px; background: var(--saffron);
+  }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.blue::before { background: var(--blue); }
+  .stat-card.red::before { background: var(--red); }
+  .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 8px; }
+  .stat-value { font-family: 'Baloo 2', cursive; font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; }
+  .stat-value.rupee::before { content: '₹'; font-size: 18px; vertical-align: super; color: var(--saffron); }
+  .stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+  /* ── PERIOD TABS ── */
+  .period-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .period-tab {
+    padding: 7px 18px; border-radius: 20px; font-size: 13px; font-weight: 700;
+    cursor: pointer; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-muted); transition: all 0.2s;
+  }
+  .period-tab.active { background: var(--saffron); color: #1a1000; border-color: var(--saffron); }
+
+  /* ── CHART ── */
+  .chart-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 28px; }
+  .chart-title { font-size: 14px; font-weight: 700; color: var(--text-muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 120px; }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+  .bar {
+    width: 100%; background: var(--saffron); border-radius: 4px 4px 0 0;
+    transition: height 0.5s ease; cursor: pointer; position: relative;
+    min-height: 4px;
+  }
+  .bar:hover { background: var(--saffron-light); }
+  .bar-label { font-size: 10px; color: var(--text-dim); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .no-data { color: var(--text-dim); font-size: 13px; text-align: center; padding: 40px; }
+
+  /* ── TOP ITEMS ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .panel-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
+  .top-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .top-item:last-child { border-bottom: none; }
+  .top-item-rank { width: 22px; height: 22px; border-radius: 50%; background: var(--surface2); font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; justify-content: center; }
+  .top-item-rank.gold { background: var(--saffron); color: #1a1000; }
+  .top-item-name { flex: 1; font-size: 13px; font-weight: 600; }
+  .top-item-rev { font-size: 13px; color: var(--saffron); font-weight: 700; }
+
+  /* ── RECENT BILLS TABLE ── */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: var(--surface2); }
+  th { padding: 12px 16px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); font-weight: 700; }
+  td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge-green { background: rgba(76,175,125,0.15); color: var(--green); }
+  .badge-red { background: rgba(232,64,64,0.15); color: var(--red); }
+
+  /* ── CREATE BILL ── */
+  .bill-layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+  .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .item-card {
+    background: var(--surface); border: 2px solid var(--border);
+    border-radius: var(--radius); padding: 16px 14px; cursor: pointer;
+    transition: all 0.2s; text-align: center; position: relative;
+  }
+  .item-card:hover { border-color: var(--saffron); transform: translateY(-2px); }
+  .item-card.selected { border-color: var(--saffron); background: rgba(245,166,35,0.1); }
+  .item-card .item-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .item-card .item-price { font-size: 16px; font-weight: 800; color: var(--saffron); font-family: 'Baloo 2', cursive; }
+  .item-card .item-unit { font-size: 10px; color: var(--text-dim); }
+  .item-card .item-badge {
+    position: absolute; top: -8px; right: -8px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--saffron); color: #1a1000;
+    font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── BILL SUMMARY ── */
+  .bill-summary {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; position: sticky; top: 20px;
+  }
+  .bill-summary-title { font-family: 'Baloo 2', cursive; font-size: 18px; font-weight: 700; color: var(--saffron); margin-bottom: 16px; }
+  .bill-line { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .bill-line input, .bill-line select {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 8px 12px;
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 13px;
+  }
+  .bill-line input:focus, .bill-line select:focus { outline: none; border-color: var(--saffron); }
+  .bill-line label { font-size: 12px; color: var(--text-muted); white-space: nowrap; min-width: 80px; font-weight: 700; }
+
+  .cart-items { margin: 14px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 10px 0; max-height: 220px; overflow-y: auto; }
+  .cart-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+  .cart-row-name { flex: 1; font-size: 12px; font-weight: 600; }
+  .cart-qty {
+    width: 60px; text-align: center; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 4px 6px; color: var(--text); font-family: 'Nunito', sans-serif; font-size: 13px;
+  }
+  .cart-qty:focus { outline: none; border-color: var(--saffron); }
+  .cart-sub { min-width: 65px; text-align: right; font-size: 12px; font-weight: 700; color: var(--saffron); }
+  .cart-del { cursor: pointer; color: var(--text-dim); font-size: 14px; transition: color 0.2s; }
+  .cart-del:hover { color: var(--red); }
+
+  .totals-block { margin-top: 12px; }
+  .total-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: var(--text-muted); }
+  .total-row.big { font-size: 20px; font-weight: 800; color: var(--text); font-family: 'Baloo 2', cursive; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; }
+  .total-row.big span:last-child { color: var(--saffron); }
+
+  .bill-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+
+  /* ── ITEMS MGMT ── */
+  .items-form {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; margin-bottom: 28px;
+  }
+  .form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 14px; align-items: end; }
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+  .form-field label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .form-field input, .form-field select {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 14px;
+  }
+  .form-field input:focus, .form-field select:focus { outline: none; border-color: var(--saffron); }
+
+  /* ── INLINE EDIT ── */
+  .edit-input {
+    background: var(--surface2); border: 1px solid var(--saffron);
+    border-radius: 6px; padding: 4px 8px; color: var(--text);
+    font-family: 'Nunito', sans-serif; font-size: 13px; width: 90px;
+  }
+
+  /* ── BILL HISTORY ── */
+  .bill-detail-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; padding: 20px;
+  }
+  .bill-detail-modal.hidden { display: none; }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px; max-width: 480px; width: 100%;
+    max-height: 90vh; overflow-y: auto; position: relative;
+  }
+  .modal-close { position: absolute; top: 16px; right: 16px; cursor: pointer; color: var(--text-muted); font-size: 20px; }
+  .modal-close:hover { color: var(--text); }
+
+  /* ── PRINT BILL ── */
+  .print-area { display: none; }
+  @media print {
+    body * { visibility: hidden; }
+    .print-area, .print-area * { visibility: visible; }
+    .print-area {
+      display: block !important;
+      position: fixed; top: 0; left: 0; width: 100%;
+      background: white; color: black; padding: 20px;
+      font-family: 'Courier New', monospace; font-size: 13px;
+    }
+    .print-area * { color: black !important; background: white !important; }
+  }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 30px; right: 30px;
+    background: var(--surface3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 20px;
+    font-size: 14px; font-weight: 600;
+    z-index: 200; opacity: 0; transform: translateY(10px);
+    transition: all 0.3s; pointer-events: none;
+    max-width: 300px;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.success { border-color: var(--green); color: var(--green); }
+  #toast.error { border-color: var(--red); color: var(--red); }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ── EMPTY STATE ── */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+  .empty .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty p { font-size: 14px; }
+
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  .text-right { text-align: right; }
+  .flex-gap { display: flex; gap: 10px; align-items: center; }
+  .mt-16 { margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="logo">
+      <span class="chicken-emoji">🐔</span>
+      <div class="shop-name">Jayshree</div>
+      <div class="tagline">Chicken Shop · Billing</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" onclick="navigate('dashboard')">
+        <span class="icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="navigate('create-bill')">
+        <span class="icon">🧾</span> Create Bill
+      </div>
+      <div class="nav-item" onclick="navigate('items')">
+        <span class="icon">🍗</span> Manage Items
+      </div>
+      <div class="nav-item" onclick="navigate('bills')">
+        <span class="icon">📋</span> Bill History
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      Jayshree Chicken Shop<br>
+      All amounts in ₹ (INR)
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="main">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-subtitle" id="dash-date"></div>
+        </div>
+        <button class="btn btn-primary" onclick="navigate('create-bill')">+ New Bill</button>
+      </div>
+
+      <div class="period-tabs">
+        <div class="period-tab active" onclick="selectPeriod('today', this)">Today</div>
+        <div class="period-tab" onclick="selectPeriod('monthly', this)">This Month</div>
+        <div class="period-tab" onclick="selectPeriod('yearly', this)">This Year</div>
+      </div>
+
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Sales</div>
+          <div class="stat-value rupee" id="stat-revenue">0</div>
+          <div class="stat-sub" id="stat-period-label">Today</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Bills Generated</div>
+          <div class="stat-value" id="stat-bills">0</div>
+          <div class="stat-sub" id="stat-bills-label">Today</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Avg Bill Value</div>
+          <div class="stat-value rupee" id="stat-avg">0</div>
+          <div class="stat-sub">Per Transaction</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Discounts Given</div>
+          <div class="stat-value rupee" id="stat-discount">0</div>
+          <div class="stat-sub" id="stat-discount-label">Today</div>
+        </div>
+      </div>
+
+      <div class="chart-section">
+        <div class="chart-title">💰 Revenue Overview</div>
+        <div class="bar-chart" id="revenue-chart">
+          <div class="no-data">No data yet. Create some bills!</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-title">🏆 Top Items</div>
+          <div id="top-items-list"><div class="no-data">No data yet.</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">📈 All Time Stats</div>
+          <div id="alltime-stats" style="display:flex;flex-direction:column;gap:10px;padding-top:4px;">
+            <div class="total-row"><span>Total Revenue</span><span id="alltime-rev" style="color:var(--saffron);font-weight:700;">₹0</span></div>
+            <div class="total-row"><span>Total Bills</span><span id="alltime-bills" style="font-weight:700;">0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CREATE BILL ── -->
+    <div class="page" id="page-create-bill">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Create Bill</div>
+          <div class="page-subtitle">Select items, add quantities and generate bill</div>
+        </div>
+      </div>
+
+      <div class="bill-layout">
+        <!-- Left: Item Selection -->
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;">
+            Select Items
+          </div>
+          <div class="items-grid" id="bill-items-grid">
+            <div class="no-data">Loading items...</div>
+          </div>
+        </div>
+
+        <!-- Right: Bill Summary -->
+        <div class="bill-summary">
+          <div class="bill-summary-title">🧾 Bill Summary</div>
+
+          <div class="bill-line">
+            <label>Customer</label>
+            <input type="text" id="cust-name" placeholder="Walk-in Customer" />
+          </div>
+          <div class="bill-line">
+            <label>Phone</label>
+            <input type="tel" id="cust-phone" placeholder="+91 XXXXX XXXXX" />
+          </div>
+
+          <div class="cart-items" id="cart-items">
+            <div style="color:var(--text-dim);font-size:12px;text-align:center;padding:20px 0;">
+              Tap items on the left to add
+            </div>
+          </div>
+
+          <div class="totals-block">
+            <div class="total-row">
+              <span>Subtotal</span>
+              <span>₹<span id="bill-subtotal">0</span></span>
+            </div>
+            <div class="bill-line" style="margin-top:8px;">
+              <label style="min-width:100px;">Discount %</label>
+              <input type="number" id="discount-pct" placeholder="0" min="0" max="100" step="1" oninput="recalcTotals()" style="width:70px;" />
+              <span style="font-size:13px;color:var(--text-muted);">= ₹<span id="bill-discount-amt">0</span></span>
+            </div>
+            <div class="total-row big">
+              <span>Total</span>
+              <span>₹<span id="bill-total">0</span></span>
+            </div>
+          </div>
+
+          <div class="bill-actions">
+            <button class="btn btn-primary" onclick="saveBill()" id="save-bill-btn">✅ Save & Generate Bill</button>
+            <div class="flex-gap">
+              <button class="btn btn-secondary" style="flex:1" onclick="printBill()">🖨️ Print</button>
+              <button class="btn btn-whatsapp" style="flex:1" onclick="sendWhatsApp()">💬 WhatsApp</button>
+            </div>
+            <button class="btn btn-danger" onclick="clearCart()" style="width:100%">🗑️ Clear Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MANAGE ITEMS ── -->
+    <div class="page" id="page-items">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Manage Items</div>
+          <div class="page-subtitle">Add, edit or remove items from the menu</div>
+        </div>
+      </div>
+
+      <div class="items-form">
+        <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;" id="item-form-title">
+          ➕ Add New Item
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Item Name</label>
+            <input type="text" id="item-name" placeholder="e.g. Chicken Breast" />
+          </div>
+          <div class="form-field">
+            <label>Price (₹)</label>
+            <input type="number" id="item-price" placeholder="280" min="0" />
+          </div>
+          <div class="form-field">
+            <label>Unit</label>
+            <select id="item-unit">
+              <option>per kg</option>
+              <option>per piece</option>
+              <option>per 500g</option>
+              <option>per 250g</option>
+              <option>per 100g</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Category</label>
+            <input type="text" id="item-category" placeholder="Cuts" />
+          </div>
+        </div>
+        <div class="flex-gap mt-16">
+          <button class="btn btn-primary" onclick="saveItem()" id="item-save-btn">Add Item</button>
+          <button class="btn btn-secondary" onclick="cancelItemEdit()" id="item-cancel-btn" style="display:none">Cancel</button>
+        </div>
+      </div>
+
+      <div class="table-wrap" id="items-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Unit</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="items-table-body">
+            <tr><td colspan="7"><div class="no-data">Loading...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── BILL HISTORY ── -->
+    <div class="page" id="page-bills">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Bill History</div>
+          <div class="page-subtitle">All generated bills</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Bill No.</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Discount</th>
+              <th>Total</th>
+              <th>Date & Time</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bills-table-body">
+            <tr><td colspan="7"><div class="no-data">Loading...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── BILL DETAIL MODAL ── -->
+<div class="bill-detail-modal hidden" id="bill-modal">
+  <div class="modal-box">
+    <div class="modal-close" onclick="closeBillModal()">✕</div>
+    <div id="bill-modal-content"></div>
+    <div class="flex-gap mt-16" style="justify-content:flex-end;">
+      <button class="btn btn-secondary btn-sm" onclick="printModalBill()">🖨️ Print</button>
+      <button class="btn btn-whatsapp btn-sm" onclick="whatsappModalBill()">💬 WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PRINT AREA ── -->
+<div class="print-area" id="print-area"></div>
+
+<!-- ── TOAST ── -->
+<div id="toast"></div>
+
+<script>
+const API = '';
+let cart = {}; // { itemId: { item, qty } }
+let allItems = [];
+let currentBillId = null;
+let editingItemId = null;
+let modalBillData = null;
+let currentPeriod = 'today';
+
+// ── NAVIGATION ──────────────────────────────────────────────────────────────
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  const navMap = { 'dashboard': 0, 'create-bill': 1, 'items': 2, 'bills': 3 };
+  document.querySelectorAll('.nav-item')[navMap[page]]?.classList.add('active');
+
+  if (page === 'dashboard') loadStats(currentPeriod);
+  if (page === 'create-bill') loadItemsForBill();
+  if (page === 'items') loadItemsTable();
+  if (page === 'bills') loadBillsTable();
+}
+
+// ── TOAST ───────────────────────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `show ${type}`;
+  setTimeout(() => t.className = '', 2500);
+}
+
+// ── API HELPERS ─────────────────────────────────────────────────────────────
+async function apiFetch(url, opts = {}) {
+  const res = await fetch(API + url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  return res.json();
+}
+
+// ── FORMAT ──────────────────────────────────────────────────────────────────
+function fmtRupee(n) { return '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
+function fmtDate(d) {
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+    + ' ' + dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ── DASHBOARD ───────────────────────────────────────────────────────────────
+function selectPeriod(period, el) {
+  currentPeriod = period;
+  document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  loadStats(period);
+}
+
+async function loadStats(period = 'today') {
+  try {
+    const r = await apiFetch(`/api/stats?period=${period}`);
+    if (!r.success) return;
+    const { summary, chartData, topItems, allTime } = r.data;
+    const label = { today: 'Today', monthly: 'This Month', yearly: 'This Year' }[period];
+
+    document.getElementById('stat-revenue').textContent = Number(summary.totalRevenue || 0).toLocaleString('en-IN');
+    document.getElementById('stat-bills').textContent = summary.totalBills || 0;
+    const avg = summary.totalBills ? Math.round(summary.totalRevenue / summary.totalBills) : 0;
+    document.getElementById('stat-avg').textContent = avg.toLocaleString('en-IN');
+    document.getElementById('stat-discount').textContent = Number(summary.totalDiscount || 0).toLocaleString('en-IN');
+    document.getElementById('stat-period-label').textContent = label;
+    document.getElementById('stat-bills-label').textContent = label;
+    document.getElementById('stat-discount-label').textContent = label;
+
+    renderChart(chartData);
+    renderTopItems(topItems);
+
+    document.getElementById('alltime-rev').textContent = fmtRupee(allTime.totalRevenue);
+    document.getElementById('alltime-bills').textContent = allTime.totalBills;
+  } catch (e) { console.error(e); }
+}
+
+function renderChart(data) {
+  const chart = document.getElementById('revenue-chart');
+  if (!data || !data.length) {
+    chart.innerHTML = '<div class="no-data">No data for this period yet.</div>';
+    return;
+  }
+  const max = Math.max(...data.map(d => d.revenue), 1);
+  chart.innerHTML = data.map(d => `
+    <div class="bar-wrap">
+      <div class="bar" style="height:${Math.max(4, (d.revenue / max) * 100)}%" title="${fmtRupee(d.revenue)}"></div>
+      <div class="bar-label">${d._id}</div>
+    </div>
+  `).join('');
+}
+
+function renderTopItems(items) {
+  const el = document.getElementById('top-items-list');
+  if (!items || !items.length) { el.innerHTML = '<div class="no-data">No items sold yet.</div>'; return; }
+  el.innerHTML = items.map((item, i) => `
+    <div class="top-item">
+      <div class="top-item-rank ${i === 0 ? 'gold' : ''}">${i + 1}</div>
+      <div class="top-item-name">${item._id}</div>
+      <div style="font-size:11px;color:var(--text-dim)">${item.totalQty.toFixed(2)} kg</div>
+      <div class="top-item-rev">${fmtRupee(item.totalRevenue)}</div>
+    </div>
+  `).join('');
+}
+
+// ── ITEMS FOR BILL ───────────────────────────────────────────────────────────
+async function loadItemsForBill() {
+  const r = await apiFetch('/api/items');
+  allItems = r.data || [];
+  renderBillItemsGrid();
+}
+
+function renderBillItemsGrid() {
+  const grid = document.getElementById('bill-items-grid');
+  if (!allItems.length) { grid.innerHTML = '<div class="no-data">No items found. Add some in Manage Items.</div>'; return; }
+  grid.innerHTML = allItems.filter(i => i.available).map(item => {
+    const inCart = cart[item._id];
+    return `
+      <div class="item-card ${inCart ? 'selected' : ''}" onclick="addToCart('${item._id}')">
+        ${inCart ? `<div class="item-badge">${inCart.qty}</div>` : ''}
+        <div class="item-name">${item.name}</div>
+        <div class="item-price">${fmtRupee(item.price)}</div>
+        <div class="item-unit">${item.unit}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── CART ─────────────────────────────────────────────────────────────────────
+function addToCart(itemId) {
+  const item = allItems.find(i => i._id === itemId);
+  if (!item) return;
+  if (cart[itemId]) {
+    cart[itemId].qty += 1;
+  } else {
+    cart[itemId] = { item, qty: 1 };
+  }
+  renderBillItemsGrid();
+  renderCart();
+}
+
+function removeFromCart(itemId) {
+  delete cart[itemId];
+  renderBillItemsGrid();
+  renderCart();
+}
+
+function updateQty(itemId, val) {
+  const qty = parseFloat(val);
+  if (isNaN(qty) || qty <= 0) { removeFromCart(itemId); return; }
+  if (cart[itemId]) { cart[itemId].qty = qty; }
+  renderBillItemsGrid();
+  recalcTotals();
+}
+
+function renderCart() {
+  const el = document.getElementById('cart-items');
+  const entries = Object.entries(cart);
+  if (!entries.length) {
+    el.innerHTML = '<div style="color:var(--text-dim);font-size:12px;text-align:center;padding:20px 0;">Tap items on the left to add</div>';
+    recalcTotals(); return;
+  }
+  el.innerHTML = entries.map(([id, { item, qty }]) => `
+    <div class="cart-row">
+      <div class="cart-row-name">${item.name}</div>
+      <input class="cart-qty" type="number" value="${qty}" min="0.1" step="0.1"
+        onchange="updateQty('${id}', this.value)" onclick="this.select()" />
+      <div class="cart-sub">₹${(item.price * qty).toLocaleString('en-IN')}</div>
+      <span class="cart-del" onclick="removeFromCart('${id}')">✕</span>
+    </div>
+  `).join('');
+  recalcTotals();
+}
+
+function recalcTotals() {
+  const subtotal = Object.values(cart).reduce((s, { item, qty }) => s + item.price * qty, 0);
+  const discPct = parseFloat(document.getElementById('discount-pct')?.value) || 0;
+  const discount = Math.round(subtotal * discPct / 100);
+  const total = subtotal - discount;
+  document.getElementById('bill-subtotal').textContent = subtotal.toLocaleString('en-IN');
+  document.getElementById('bill-discount-amt').textContent = discount.toLocaleString('en-IN');
+  document.getElementById('bill-total').textContent = total.toLocaleString('en-IN');
+}
+
+function clearCart() {
+  cart = {};
+  document.getElementById('discount-pct').value = '';
+  document.getElementById('cust-name').value = '';
+  document.getElementById('cust-phone').value = '';
+  currentBillId = null;
+  renderBillItemsGrid();
+  renderCart();
+}
+
+// ── SAVE BILL ────────────────────────────────────────────────────────────────
+async function saveBill() {
+  const entries = Object.entries(cart);
+  if (!entries.length) { toast('Add at least one item to the cart!', 'error'); return; }
+
+  const btn = document.getElementById('save-bill-btn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  const items = entries.map(([id, { item, qty }]) => ({
+    itemId: id, name: item.name, price: item.price,
+    unit: item.unit, quantity: qty, subtotal: item.price * qty
+  }));
+
+  const body = {
+    customerName: document.getElementById('cust-name').value || 'Walk-in Customer',
+    customerPhone: document.getElementById('cust-phone').value || '',
+    items,
+    discountPercent: parseFloat(document.getElementById('discount-pct').value) || 0
+  };
+
+  try {
+    const r = await apiFetch('/api/bills', { method: 'POST', body: JSON.stringify(body) });
+    if (r.success) {
+      currentBillId = r.data._id;
+      toast(`✅ Bill ${r.data.billNumber} saved!`);
+      clearCart();
+    } else { toast(r.message || 'Error saving bill', 'error'); }
+  } catch (e) { toast('Server error', 'error'); }
+  btn.disabled = false; btn.textContent = '✅ Save & Generate Bill';
+}
+
+// ── PRINT BILL ───────────────────────────────────────────────────────────────
+function buildReceiptHTML(bill) {
+  const items = bill.items.map(i => `
+    ${i.name.padEnd(20)} ${i.quantity} x ${fmtRupee(i.price)} = ${fmtRupee(i.subtotal)}`).join('\n');
+  return `
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:22px;font-weight:bold;">🐔 JAYSHREE CHICKEN SHOP</div>
+      <div style="font-size:12px;">Fresh & Quality Chicken</div>
+      <div>------------------------------------</div>
+    </div>
+    <div>Bill No: ${bill.billNumber}</div>
+    <div>Date: ${fmtDate(bill.createdAt)}</div>
+    <div>Customer: ${bill.customerName}</div>
+    ${bill.customerPhone ? `<div>Phone: ${bill.customerPhone}</div>` : ''}
+    <div>------------------------------------</div>
+    <pre style="font-size:13px">${items}</pre>
+    <div>------------------------------------</div>
+    <div>Subtotal: ${fmtRupee(bill.subtotal)}</div>
+    ${bill.discount ? `<div>Discount (${bill.discountPercent}%): -${fmtRupee(bill.discount)}</div>` : ''}
+    <div style="font-size:18px;font-weight:bold;margin-top:6px;">TOTAL: ${fmtRupee(bill.total)}</div>
+    <div>------------------------------------</div>
+    <div style="text-align:center;margin-top:12px;">Thank you! Visit again 🙏</div>
+  `;
+}
+
+async function getCurrentBillData() {
+  if (currentBillId) {
+    const r = await apiFetch(`/api/bills/${currentBillId}`);
+    if (r.success) return r.data;
+  }
+  return null;
+}
+
+async function printBill() {
+  const bill = await getCurrentBillData();
+  if (!bill) { toast('Save the bill first!', 'error'); return; }
+  document.getElementById('print-area').innerHTML = buildReceiptHTML(bill);
+  window.print();
+}
+
+async function sendWhatsApp() {
+  const bill = await getCurrentBillData();
+  if (!bill) { toast('Save the bill first!', 'error'); return; }
+  const items = bill.items.map(i => `- ${i.name}: ${i.quantity} x ₹${i.price} = ₹${i.subtotal}`).join('\n');
+  const msg = `*Jayshree Chicken Shop 🐔*\nBill No: ${bill.billNumber}\nDate: ${fmtDate(bill.createdAt)}\n\n${items}\n\n${bill.discount ? `Discount: -₹${bill.discount}\n` : ''}*Total: ₹${bill.total}*\n\nThank you for your purchase! 🙏`;
+  const phone = bill.customerPhone?.replace(/\D/g, '') || '';
+  const url = `https://wa.me/${phone ? '91' + phone.slice(-10) : ''}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+// ── ITEMS TABLE ───────────────────────────────────────────────────────────────
+async function loadItemsTable() {
+  const r = await apiFetch('/api/items');
+  allItems = r.data || [];
+  renderItemsTable();
+}
+
+function renderItemsTable() {
+  const tbody = document.getElementById('items-table-body');
+  if (!allItems.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="no-data">No items added yet.</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = allItems.map((item, i) => `
+    <tr id="item-row-${item._id}">
+      <td>${i + 1}</td>
+      <td><strong>${item.name}</strong></td>
+      <td>${item.category || '—'}</td>
+      <td>${item.unit}</td>
+      <td id="price-cell-${item._id}">
+        <span id="price-display-${item._id}" style="color:var(--saffron);font-weight:700;">₹${item.price}</span>
+      </td>
+      <td>
+        <span class="badge ${item.available ? 'badge-green' : 'badge-red'}">
+          ${item.available ? 'Available' : 'Hidden'}
+        </span>
+      </td>
+      <td>
+        <div class="flex-gap">
+          <button class="btn btn-secondary btn-sm" onclick="startEditItem('${item._id}')">✏️ Edit</button>
+          <button class="btn btn-sm" style="background:rgba(245,166,35,0.1);color:var(--saffron);border:1px solid rgba(245,166,35,0.3)" onclick="toggleItemAvail('${item._id}', ${!item.available})">
+            ${item.available ? '🙈 Hide' : '👁️ Show'}
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteItem('${item._id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+let editItemId = null;
+function startEditItem(id) {
+  const item = allItems.find(i => i._id === id);
+  if (!item) return;
+  editItemId = id;
+  document.getElementById('item-name').value = item.name;
+  document.getElementById('item-price').value = item.price;
+  document.getElementById('item-unit').value = item.unit;
+  document.getElementById('item-category').value = item.category || '';
+  document.getElementById('item-form-title').textContent = `✏️ Editing: ${item.name}`;
+  document.getElementById('item-save-btn').textContent = 'Update Item';
+  document.getElementById('item-cancel-btn').style.display = 'inline-flex';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelItemEdit() {
+  editItemId = null;
+  document.getElementById('item-name').value = '';
+  document.getElementById('item-price').value = '';
+  document.getElementById('item-category').value = '';
+  document.getElementById('item-form-title').textContent = '➕ Add New Item';
+  document.getElementById('item-save-btn').textContent = 'Add Item';
+  document.getElementById('item-cancel-btn').style.display = 'none';
+}
+
+async function saveItem() {
+  const name = document.getElementById('item-name').value.trim();
+  const price = parseFloat(document.getElementById('item-price').value);
+  const unit = document.getElementById('item-unit').value;
+  const category = document.getElementById('item-category').value.trim() || 'Chicken';
+
+  if (!name) { toast('Enter item name', 'error'); return; }
+  if (!price || price < 0) { toast('Enter valid price', 'error'); return; }
+
+  const body = { name, price, unit, category };
+  let r;
+  if (editItemId) {
+    r = await apiFetch(`/api/items/${editItemId}`, { method: 'PUT', body: JSON.stringify(body) });
+  } else {
+    r = await apiFetch('/api/items', { method: 'POST', body: JSON.stringify(body) });
+  }
+
+  if (r.success) {
+    toast(editItemId ? '✅ Item updated!' : '✅ Item added!');
+    cancelItemEdit();
+    loadItemsTable();
+  } else { toast(r.message || 'Error', 'error'); }
+}
+
+async function toggleItemAvail(id, val) {
+  const r = await apiFetch(`/api/items/${id}`, { method: 'PUT', body: JSON.stringify({ available: val }) });
+  if (r.success) { toast(val ? '👁️ Item visible' : '🙈 Item hidden'); loadItemsTable(); }
+}
+
+async function deleteItem(id) {
+  if (!confirm('Delete this item?')) return;
+  const r = await apiFetch(`/api/items/${id}`, { method: 'DELETE' });
+  if (r.success) { toast('🗑️ Item deleted'); loadItemsTable(); }
+  else toast(r.message || 'Error', 'error');
+}
+
+// ── BILLS TABLE ───────────────────────────────────────────────────────────────
+async function loadBillsTable() {
+  const r = await apiFetch('/api/bills?limit=50');
+  const bills = r.data || [];
+  const tbody = document.getElementById('bills-table-body');
+  if (!bills.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="no-data">No bills generated yet.</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = bills.map(b => `
+    <tr>
+      <td><strong style="color:var(--saffron)">${b.billNumber}</strong></td>
+      <td>${b.customerName}</td>
+      <td>${b.items.length} item(s)</td>
+      <td>${b.discount ? fmtRupee(b.discount) : '—'}</td>
+      <td><strong>${fmtRupee(b.total)}</strong></td>
+      <td style="font-size:12px;color:var(--text-muted)">${fmtDate(b.createdAt)}</td>
+      <td>
+        <div class="flex-gap">
+          <button class="btn btn-secondary btn-sm" onclick="viewBill('${b._id}')">👁️ View</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteBill('${b._id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function viewBill(id) {
+  const r = await apiFetch(`/api/bills/${id}`);
+  if (!r.success) return;
+  modalBillData = r.data;
+  const bill = r.data;
+  const items = bill.items.map(i =>
+    `<div class="cart-row"><div class="cart-row-name">${i.name}</div><div style="font-size:12px;color:var(--text-muted)">${i.quantity} × ₹${i.price}</div><div class="cart-sub">${fmtRupee(i.subtotal)}</div></div>`
+  ).join('');
+  document.getElementById('bill-modal-content').innerHTML = `
+    <div style="font-family:'Baloo 2',cursive;font-size:20px;color:var(--saffron);margin-bottom:4px;">🧾 ${bill.billNumber}</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">${fmtDate(bill.createdAt)}</div>
+    <div style="margin-bottom:6px;font-size:13px"><strong>Customer:</strong> ${bill.customerName}</div>
+    ${bill.customerPhone ? `<div style="margin-bottom:14px;font-size:13px"><strong>Phone:</strong> ${bill.customerPhone}</div>` : ''}
+    <div style="border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:10px 0;margin-bottom:12px">${items}</div>
+    <div class="total-row"><span>Subtotal</span><span>${fmtRupee(bill.subtotal)}</span></div>
+    ${bill.discount ? `<div class="total-row"><span>Discount (${bill.discountPercent}%)</span><span style="color:var(--red)">-${fmtRupee(bill.discount)}</span></div>` : ''}
+    <div class="total-row big"><span>Total</span><span>${fmtRupee(bill.total)}</span></div>
+  `;
+  document.getElementById('bill-modal').classList.remove('hidden');
+}
+
+function closeBillModal() {
+  document.getElementById('bill-modal').classList.add('hidden');
+  modalBillData = null;
+}
+
+function printModalBill() {
+  if (!modalBillData) return;
+  document.getElementById('print-area').innerHTML = buildReceiptHTML(modalBillData);
+  window.print();
+}
+
+function whatsappModalBill() {
+  if (!modalBillData) return;
+  const bill = modalBillData;
+  const items = bill.items.map(i => `- ${i.name}: ${i.quantity} × ₹${i.price} = ₹${i.subtotal}`).join('\n');
+  const msg = `*Jayshree Chicken Shop 🐔*\nBill No: ${bill.billNumber}\nDate: ${fmtDate(bill.createdAt)}\n\n${items}\n\n${bill.discount ? `Discount: -₹${bill.discount}\n` : ''}*Total: ₹${bill.total}*\n\nThank you! 🙏`;
+  const phone = bill.customerPhone?.replace(/\D/g, '') || '';
+  window.open(`https://wa.me/${phone ? '91' + phone.slice(-10) : ''}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+async function deleteBill(id) {
+  if (!confirm('Delete this bill? This action cannot be undone.')) return;
+  const r = await apiFetch(`/api/bills/${id}`, { method: 'DELETE' });
+  if (r.success) { toast('🗑️ Bill deleted'); loadBillsTable(); }
+  else toast(r.message || 'Error', 'error');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+window.onclick = (e) => {
+  const modal = document.getElementById('bill-modal');
+  if (e.target === modal) closeBillModal();
+};
+
+document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-IN', {
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+});
+
+loadStats('today');
+</script>
+</body>
+</html>
