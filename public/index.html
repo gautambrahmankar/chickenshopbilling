@@ -25,8 +25,19 @@
     --radius-sm: 8px;
     --shadow: 0 4px 24px rgba(0,0,0,0.4);
   }
+  html.light {
+    --bg: #f5f0e8;
+    --surface: #ffffff;
+    --surface2: #f0ebe0;
+    --surface3: #e8e0d0;
+    --border: #ddd5c0;
+    --text: #1a1208;
+    --text-muted: #6b5c3e;
+    --text-dim: #a89878;
+    --shadow: 0 4px 24px rgba(0,0,0,0.1);
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; transition: background 0.3s, color 0.3s; }
 
   /* ── LAYOUT ── */
   .app { display: flex; height: 100vh; overflow: hidden; }
@@ -64,11 +75,32 @@
   .nav-item .icon { font-size: 18px; width: 22px; text-align: center; }
 
   .sidebar-footer {
-    padding: 16px 20px 0;
+    padding: 10px 20px 0;
     border-top: 1px solid var(--border);
     font-size: 11px; color: var(--text-dim);
     line-height: 1.6;
   }
+
+  /* ── THEME TOGGLE ── */
+  .theme-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px; cursor: pointer; border-top: 1px solid var(--border);
+  }
+  .theme-toggle:hover .toggle-track { opacity: 0.85; }
+  .theme-label { font-size: 12px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+  .toggle-track {
+    width: 44px; height: 24px; border-radius: 12px;
+    background: var(--surface3); border: 1px solid var(--border);
+    position: relative; transition: background 0.3s;
+    flex-shrink: 0;
+  }
+  html.light .toggle-track { background: var(--saffron); border-color: var(--saffron-dark); }
+  .toggle-thumb {
+    position: absolute; top: 3px; left: 3px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--text-muted); transition: all 0.3s;
+  }
+  html.light .toggle-thumb { left: 23px; background: #fff; }
 
   /* ── MAIN ── */
   .main { flex: 1; overflow-y: auto; overflow-x: hidden; }
@@ -326,6 +358,10 @@
         <span class="icon">📋</span> Bill History
       </div>
     </nav>
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <div class="theme-label"><span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span></div>
+      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+    </div>
     <div class="sidebar-footer">
       Jayshree Chicken Shop<br>
       All amounts in ₹ (INR)
@@ -1037,6 +1073,24 @@ document.getElementById('dash-date').textContent = new Date().toLocaleDateString
 });
 
 loadStats('today');
+
+// ── THEME TOGGLE ─────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  document.getElementById('theme-icon').textContent = isLight ? '☀️' : '🌙';
+  document.getElementById('theme-text').textContent = isLight ? 'Light Mode' : 'Dark Mode';
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+
+// Apply saved theme on load
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'light') {
+    document.documentElement.classList.add('light');
+    document.getElementById('theme-icon').textContent = '☀️';
+    document.getElementById('theme-text').textContent = 'Light Mode';
+  }
+})();
 </script>
 </body>
 </html>
